@@ -72,11 +72,14 @@ module Delayed
 
       def payload_object=(object)
         @payload_object = object
-        self.handler = object.to_yaml
+        #        self.handler = object.to_yaml
+        self.handler = {"new" => object, "class" => object.class.name}.to_json
       end
 
       def payload_object
-        @payload_object ||= YAML.load(self.handler)
+        #        @payload_object ||= YAML.load(self.handler)
+        wrapped_object = ActiveSupport::JSON.decode(self.handler)
+        @payload_object ||= Kernel.const_get(wrapped_object["class"]).inflate(wrapped_object["new"])
       rescue TypeError, LoadError, NameError, ArgumentError => e
         raise DeserializationError,
           "Job failed to load: #{e.message}. Handler: #{handler.inspect}"

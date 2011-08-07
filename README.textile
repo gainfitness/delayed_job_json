@@ -1,6 +1,7 @@
 h1. Delayed::Job
 
 Delated_job (or DJ) encapsulates the common pattern of asynchronously executing longer tasks in the background.
+This is a hack of the 2.1.4 delayed_jobs to use json instead of yaml.  The job objects needs an inflate class method to reconstruct the object from a hash.
 
 It is a direct extraction from Shopify where the job table is responsible for a multitude of core tasks. Amongst those tasks are:
 
@@ -133,6 +134,9 @@ Jobs are simple ruby objects with a method called perform. Any object which resp
 class NewsletterJob < Struct.new(:text, :emails)
   def perform
     emails.each { |e| NewsletterMailer.deliver_text_to_email(text, e) }
+  end
+  def self.inflate(hash)
+    new(hash["text"],hash["emails"])
   end
 end
 
